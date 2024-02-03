@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Tabla de Información de Cuentas</title>
+    <!-- Enlace al archivo CSS de Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+</head>
+
+<body>
+
+    <div class="container mt-4">
+        <h3 class="text-center">Información de cuenta</h3>
+        <button class="btn btn-warning" onclick="cerrarSesion()">Cerrar Sesión</button>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">Cuenta</th>
+                    <th scope="col">Contraseña</th>
+                    <th scope="col">Plan</th>
+                    <th scope="col">Fecha Ultimo Pago</th>
+                    <th scope="col">Fecha Vencimiento</th>
+                    <th scope="col">Días de servicio</th>
+                    <!-- Agrega más columnas según sea necesario -->
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{ cliente.cuenta }}</td>
+                    <td>{{ cliente.contrasena }}</td>
+                    <td>{{ cliente.plan }}</td>
+                    <td>{{ cliente.fechaUltimoPago|date:"d/m/Y" }}</td>
+                    <td>{{ cliente.fechaVencimiento|date:"d/m/Y" }}</td>
+                    <td>{{ cliente.diasServicio }}</td>
+                    <!-- Agrega más columnas según sea necesario -->
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    
+
+
+    <!-- Enlace al archivo JavaScript de Bootstrap (opcional, solo si se necesitan componentes interactivos) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        function cerrarSesion() {
+            // Hacer una solicitud al servidor para cerrar la sesión
+            fetch('/cerrar-sesion/', {
+                method: 'POST',  // Puedes usar POST u otro método según tu configuración
+                credentials: 'same-origin'  // Para incluir las cookies en la solicitud
+            })
+            .then(response => {
+                // Redirigir a la página de inicio de sesión después de cerrar sesión
+                window.location.replace("/");
+            })
+            .catch(error => {
+                console.error('Error al cerrar sesión:', error);
+            });
+        }
+    </script>
+    
+
+</body>
+
+</html>

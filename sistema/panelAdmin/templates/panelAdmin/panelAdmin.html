@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Tabla de Información de Cuentas</title>
+    <!-- Enlace al archivo CSS de Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+</head>
+
+<body>
+
+    <div class="container mt-5">
+        <h2 class="mb-4">Tabla de Información de Cuentas</h2>
+        <button type="button" class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#agregarModal">
+            Agregar
+        </button>
+        <button class="btn btn-warning mb-3" onclick="cerrarSesion()">Cerrar Sesión</button>
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">Cuenta</th>
+                    <th scope="col">Contraseña</th>
+                    <th scope="col">Fecha Inicio</th>
+                    <th scope="col">Plan</th>
+                    <th scope="col">Fecha Último Pago</th>
+                    <th scope="col">Fecha Vencimiento</th>
+                    <th scope="col">Días de Servicio</th>
+                    <th scope="col">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for dato in datos %}
+                <tr>
+                    <td>{{dato.cuenta}}</td>
+                    <td>{{dato.contrasena}}</td>
+                    <td>{{dato.fechaInicio|date:"d/m/Y"}}</td>
+                    <td>{{dato.plan}}</td>
+                    <td>{{dato.fechaUltimoPago|date:"d/m/Y"}}</td>
+                    <td>{{dato.fechaVencimiento|date:"d/m/Y"}}</td>
+                    <td>{{dato.diasServicio}}</td>
+                    <td>
+                        <!-- Agrega aquí botones para acciones adicionales (editar, eliminar, etc.) -->
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editarModal" data-dato-id="{{ dato.id }}">Editar</button>
+                    </td>
+                    <td>
+                        <form method="post" action="{% url 'eliminar_registro' dato.id %}" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#eliminarModal{{ dato.id }}">
+                                Eliminar
+                            </button>
+                            <!-- Modal de confirmación -->
+                            <div class="modal fade" id="eliminarModal{{ dato.id }}" tabindex="-1" aria-labelledby="eliminarModalLabel{{ dato.id }}" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="eliminarModalLabel{{ dato.id }}">Confirmación de Eliminación</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                        ¿Estás seguro de que deseas eliminar este registro?
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                            <form method="POST" action="{% url 'eliminar_registro' dato.id %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="confirmacion" value="confirmado">
+                                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                            </form>
+        </div>
+    </div>
+</div>
+</div>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+                <!-- Agrega más filas según sea necesario -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Modal para agregar datos -->
+    <div class="modal fade" id="agregarModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Agregar Nuevo Registro</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Formulario para ingresar nuevos datos -->
+                    <form method="POST" action="{% url 'agregar_registro/' %}">
+                        {% csrf_token %}
+                        <!-- Agrega aquí campos del formulario (cuenta, contraseña, plan, último pago) -->
+                        <label for="cuenta">Cuenta:</label>
+                        <input type="text" name="cuenta" required>
+                        <br><br>
+                        <label for="contrasena">Contraseña:</label>
+                        <input type="password" name="contrasena" required>
+                        <br><br>
+                        <label for="planes">Selecciona un PLAN:</label>
+                        <select id="planes" name="planes">
+                            <option value="mensual">Mensual</option>
+                            <option value="trimestral">Trimestral</option>
+                            <option value="semestral">Semestral</option>
+                            <option value="Anual">Anual</option>
+                        </select>
+                        <br><br>
+                        <label for="fecha">Fecha ultimo pago:</label>
+                        <input type="date" id="fecha" name="fecha">
+                        <br><br>
+                        <!-- Agrega los campos restantes -->
+                        <button type="submit" class="btn btn-primary">Guardar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para editar datos -->
+    <div class="modal fade" id="editarModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Editar Registro</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Formulario para editar datos -->
+                    <form method="post" action="{% url 'actualizar_registro/' %}">
+                        {% csrf_token %}
+                        <!-- Campos del formulario prellenados con los datos actuales -->
+                        <label for="cuenta">Cuenta:</label>
+                        <input type="text" name="cuenta" id="cuentaEditar" value="{{ dato.cuenta }}" required>
+                        <br><br>
+                        <label for="contrasena">Contraseña:</label>
+                        <input type="text" name="contrasena" id="contrasenaEditar" value="{{ dato.contrasena }}" required>
+                        <br><br>
+                        <label for="planes">Selecciona un PLAN:</label>
+                        <select id="planesEditar" name="planes">
+                            <option value="mensual" {% if dato.plan == 'mensual' %}selected{% endif %}>Mensual</option>
+
+                            <option value="trimestral" {% if dato.plan == 'trimestral' %}selected{% endif %}>Trimestral</option>
+
+                            <option value="semestral" {% if dato.plan == 'semestral' %}selected{% endif %}>Semestral</option>
+
+                            <option value="anual" {% if dato.plan == 'anual' %}selected{% endif %}>Anual</option>
+
+                        </select>
+                        <br><br>
+                        <label for="fecha">Fecha último pago:</label>
+                        <input type="date" id="fechaEditar" name="fecha" value="{{ dato.fechaUltimoPago|date:'Y-m-d' }}">
+                        <br><br>
+                        <!-- Agrega los campos restantes -->
+                        <input type="hidden" name="registro_id" value="{{ dato.id }}" id="registro_id_hidden">
+                        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- Enlace al archivo JavaScript de Bootstrap (opcional, solo si se necesitan componentes interactivos) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Escucha el evento 'show.bs.modal' cuando el modal se está mostrando
+            document.getElementById('editarModal').addEventListener('show.bs.modal', function (event) {
+                // Obtiene el botón que activó el modal
+                var button = event.relatedTarget;
+    
+                // Obtiene el ID del dato desde el botón
+                var datoId = button.dataset.datoId;
+    
+                // Realiza una solicitud AJAX al servidor para obtener los detalles del registro
+                var xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState === 4) {
+                        if (xhr.status === 200){
+                            // Parsea la respuesta JSON del servidor
+                        var datosRegistro = JSON.parse(xhr.responseText);
+    
+                        // Actualiza los campos del formulario con los datos obtenidos
+                        document.getElementById('registro_id_hidden').value = datoId;
+                        document.getElementById('cuentaEditar').value = datosRegistro.cuenta;
+                        document.getElementById('contrasenaEditar').value = datosRegistro.contrasena;
+                        document.getElementById('planesEditar').value = datosRegistro.plan;
+                        document.getElementById('fechaEditar').value = moment(datosRegistro.fechaUltimoPago).format('YYYY-MM-DD');
+
+                        } else {
+                            console.error('Error en la solicitud AJAX', xhr.statusText);
+                        }
+                        
+                    }
+                };
+    
+                // Configura y envía la solicitud al servidor
+                xhr.open('GET', '{% url "obtener_detalle_registro" %}?id=' + datoId, true);
+                xhr.send();
+
+            });
+        });
+    </script>
+    <script>
+        function cerrarSesion() {
+            // Hacer una solicitud al servidor para cerrar la sesión
+            fetch('/cerrar-sesion/', {
+                method: 'POST',  // Puedes usar POST u otro método según tu configuración
+                credentials: 'same-origin'  // Para incluir las cookies en la solicitud
+            })
+            .then(response => {
+                // Redirigir a la página de inicio de sesión después de cerrar sesión
+                window.location.replace("/");
+            })
+            .catch(error => {
+                console.error('Error al cerrar sesión:', error);
+            });
+        }
+    </script>
+    
+
+</body>
+
+</html>
